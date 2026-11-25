@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel del Profesor | EvaluaWeb</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <nav class="navbar">
+        <a href="panel-profesor.html" class="navbar-brand">EvaluaWeb | Profesor</a>
+        <div class="navbar-user">
+            <span id="nombre-usuario">Cargando usuario...</span>
+            <button id="btn-logout" class="btn btn-secondary btn-sm">Cerrar sesión</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="dashboard-header">
+            <div>
+                <h1>Mis Cuestionarios</h1>
+                <p style="color: var(--text-muted);">Crea, edita, publica y revisa los resultados de tus exámenes.</p>
+            </div>
+            <a href="crear-cuestionario.html" class="btn btn-primary">+ Nuevo Cuestionario</a>
+        </div>
+
+        <div id="mensaje-alerta" class="alert"></div>
+
+        <!-- Contenedor dinámico donde JS insertará las tarjetas de cuestionarios -->
+        <section id="lista-cuestionarios-profesor" class="grid-cards">
+            <div class="card">
+                <p style="color: var(--text-muted);">Cargando tus cuestionarios...</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/profesor.js"></script>
+</body>
+</html>

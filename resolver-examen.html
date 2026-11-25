@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolver Examen | EvaluaWeb</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <span class="navbar-brand">EvaluaWeb | Examen en curso</span>
+        <div class="navbar-user">
+            <span id="temporizador" style="font-weight: 700; color: var(--primary);"></span>
+            <a href="panel-alumno.html" class="btn btn-secondary btn-sm" onclick="return confirm('¿Seguro que quieres salir? Tu progreso no guardado se perderá.');">Cancelar</a>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width: 800px;">
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <span id="examen-materia" style="font-size: 0.85rem; font-weight: 600; color: var(--primary);"></span>
+            <h1 id="examen-titulo" style="font-size: 1.5rem; margin: 0.25rem 0;">Cargando cuestionario...</h1>
+            <p id="examen-descripcion" style="color: var(--text-muted);"></p>
+        </div>
+
+        <div id="mensaje-alerta" class="alert"></div>
+
+        <form id="form-resolver-examen">
+            <!-- Contenedor donde JS insertará las preguntas y sus opciones -->
+            <div id="contenedor-preguntas-examen">
+                <div class="card">
+                    <p style="color: var(--text-muted);">Preparando preguntas...</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; text-align: right;">
+                <button type="submit" id="btn-enviar-examen" class="btn btn-primary" style="font-size: 1.05rem; padding: 0.8rem 2rem;">
+                    Finalizar y Enviar Respuestas
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/alumno.js"></script>
+</body>
+</html>

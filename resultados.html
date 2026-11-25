@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados del Examen | EvaluaWeb</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="panel-alumno.html" class="navbar-brand">EvaluaWeb | Alumno</a>
+        <div class="navbar-user">
+            <span id="nombre-usuario">Cargando...</span>
+            <a href="panel-alumno.html" class="btn btn-primary btn-sm">Volver al Panel</a>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width: 700px;">
+        <div id="mensaje-alerta" class="alert"></div>
+
+        <section class="card" style="text-align: center; padding: 2.5rem 1.5rem;">
+            <span id="res-materia" style="font-size: 0.9rem; font-weight: 600; color: var(--primary);"></span>
+            <h1 id="res-titulo" style="font-size: 1.6rem; margin: 0.5rem 0;">Cargando resultados...</h1>
+            <p id="res-fecha" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem;"></p>
+
+            <div style="background-color: var(--bg-main); border-radius: var(--radius); padding: 1.5rem; margin: 1rem auto; max-width: 300px;">
+                <p style="font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">
+                    Calificación Final
+                </p>
+                <div id="res-calificacion" style="font-size: 3rem; font-weight: 800; color: var(--primary); margin: 0.25rem 0;">
+                    --
+                </div>
+                <span id="res-estado-badge" class="badge"></span>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <a href="panel-alumno.html" class="btn btn-secondary">Regresar a Mis Cuestionarios</a>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/alumno.js"></script>
+</body>
+</html>

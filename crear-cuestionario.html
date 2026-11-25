@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Cuestionario | EvaluaWeb</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="panel-profesor.html" class="navbar-brand">EvaluaWeb | Profesor</a>
+        <div class="navbar-user">
+            <span id="nombre-usuario">Cargando...</span>
+            <a href="panel-profesor.html" class="btn btn-secondary btn-sm">Volver al panel</a>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width: 800px;">
+        <div class="dashboard-header">
+            <h1 id="titulo-pagina">Crear Nuevo Cuestionario</h1>
+        </div>
+
+        <div id="mensaje-alerta" class="alert"></div>
+
+        <!-- SECCIÓN 1: DATOS GENERALES DEL CUESTIONARIO -->
+        <section class="card" style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">1. Configuración del Cuestionario</h2>
+            <form id="form-cuestionario">
+                <div class="form-group">
+                    <label for="titulo">Título del cuestionario *</label>
+                    <input type="text" id="titulo" class="form-control" placeholder="Ej. Examen Parcial 1 - Bases de Datos" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="materia">Materia</label>
+                    <select id="materia" class="form-control" required>
+                        <option value="">Cargando materias...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="descripcion">Descripción o instrucciones</label>
+                    <textarea id="descripcion" class="form-control" rows="2" placeholder="Instrucciones para los alumnos..."></textarea>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="tiempo_limite">Tiempo límite (minutos, 0 = sin límite)</label>
+                        <input type="number" id="tiempo_limite" class="form-control" min="0" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="intentos_permitidos">Intentos permitidos</label>
+                        <input type="number" id="intentos_permitidos" class="form-control" min="1" value="1" required>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-guardar-cuestionario" class="btn btn-primary">
+                    Guardar y Continuar a Preguntas
+                </button>
+            </form>
+        </section>
+
+        <!-- SECCIÓN 2: AGREGAR PREGUNTAS Y OPCIONES -->
+        <section id="seccion-preguntas" style="display: none;">
+            <div class="card" style="margin-bottom: 2rem;">
+                <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">2. Agregar Nueva Pregunta</h2>
+                <form id="form-pregunta">
+                    <div class="form-group">
+                        <label for="tipo-pregunta">Tipo de pregunta</label>
+                        <select id="tipo-pregunta" class="form-control">
+                            <option value="opcion_multiple">Opción múltiple (4 incisos)</option>
+                            <option value="verdadero_falso">Verdadero o Falso</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="texto-pregunta">Enunciado de la pregunta *</label>
+                        <input type="text" id="texto-pregunta" class="form-control" placeholder="Ej. ¿Qué significa SQL?" required>
+                    </div>
+
+                    <p style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">
+                        Opciones de respuesta (selecciona el círculo de la respuesta correcta):
+                    </p>
+
+                    <!-- Contenedor dinámico para 4 opciones o Verdadero/Falso -->
+                    <div id="contenedor-opciones-inputs">
+                        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="correcta" value="0" required title="Marcar como correcta">
+                            <input type="text" class="form-control opcion-texto" placeholder="Opción A" required>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="correcta" value="1" required title="Marcar como correcta">
+                            <input type="text" class="form-control opcion-texto" placeholder="Opción B" required>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="correcta" value="2" required title="Marcar como correcta">
+                            <input type="text" class="form-control opcion-texto" placeholder="Opción C" required>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="correcta" value="3" required title="Marcar como correcta">
+                            <input type="text" class="form-control opcion-texto" placeholder="Opción D" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-agregar-pregunta" class="btn btn-primary">
+                        + Agregar Pregunta al Cuestionario
+                    </button>
+                </form>
+            </div>
+
+            <!-- LISTA DE PREGUNTAS YA AGREGADAS -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Preguntas Guardadas (<span id="contador-preguntas">0</span>)</h2>
+                <button id="btn-publicar-ahora" class="btn btn-primary" style="background-color: var(--success);">
+                    Finalizar y Publicar Cuestionario
+                </button>
+            </div>
+
+            <div id="lista-preguntas-guardadas"></div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/profesor.js"></script>
+</body>
+</html>
