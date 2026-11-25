@@ -12,14 +12,16 @@ function mostrarAlerta(mensaje, tipo = 'error') {
 
 // Función auxiliar para redirigir según el rol del usuario
 function redirigirPorRol(rol) {
-    if (rol === 'profesor') {
+    if (rol === 'admin') {
+        window.location.href = 'panel-admin.html';
+    } else if (rol === 'profesor') {
         window.location.href = 'panel-profesor.html';
     } else {
         window.location.href = 'panel-alumno.html';
     }
 }
 
-// 1. LÓGICA DE REGISTRO (registro.html)
+// 1. LÓGICA DE REGISTRO (registro.html) - Siempre crea cuentas de alumno
 const formRegistro = document.getElementById('form-registro');
 if (formRegistro) {
     formRegistro.addEventListener('submit', async (e) => {
@@ -28,20 +30,17 @@ if (formRegistro) {
         const btnRegistro = document.getElementById('btn-registro');
         const nombre = document.getElementById('nombre').value.trim();
         const correo = document.getElementById('correo').value.trim();
-        const rol = document.getElementById('rol').value;
         const password = document.getElementById('password').value;
 
         btnRegistro.disabled = true;
         btnRegistro.textContent = 'Registrando...';
 
-        // Enviamos nombre y rol en options.data para que el Trigger de Supabase cree el perfil automáticamente
         const { data, error } = await supabaseClient.auth.signUp({
             email: correo,
             password: password,
             options: {
                 data: {
-                    nombre: nombre,
-                    rol: rol
+                    nombre: nombre
                 }
             }
         });
@@ -53,9 +52,9 @@ if (formRegistro) {
             return;
         }
 
-        mostrarAlerta('¡Cuenta creada con éxito! Redirigiendo...', 'success');
+        mostrarAlerta('¡Cuenta de alumno creada con éxito! Redirigiendo...', 'success');
         setTimeout(() => {
-            redirigirPorRol(rol);
+            redirigirPorRol('alumno');
         }, 1200);
     });
 }
@@ -85,7 +84,7 @@ if (formLogin) {
             return;
         }
 
-        // Consultamos su perfil para saber si es profesor o alumno
+        // Consultamos su perfil para saber si es admin, profesor o alumno
         const { data: perfil, error: perfilError } = await supabaseClient
             .from('perfiles')
             .select('rol')
@@ -103,7 +102,7 @@ if (formLogin) {
     });
 }
 
-// 3. LÓGICA DE CIERRE DE SESIÓN (Botón en barras de navegación)
+// 3. LÓGICA DE CIERRE DE SESIÓN
 const btnLogout = document.getElementById('btn-logout');
 if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
@@ -113,17 +112,14 @@ if (btnLogout) {
 }
 
 // 4. PROTECCIÓN DE RUTAS Y VERIFICACIÓN DE SESIÓN
-// Esta función la llamarán las páginas internas para validar acceso y obtener los datos del usuario actual
 async function verificarSesion(rolRequerido = null) {
     const { data: { session } } = await supabaseClient.auth.getSession();
 
-    // Si no hay sesión activa, mandarlo al login
     if (!session) {
         window.location.href = 'index.html';
         return null;
     }
 
-    // Obtener datos completos del perfil desde la tabla 'perfiles'
     const { data: perfil, error } = await supabaseClient
         .from('perfiles')
         .select('*')
@@ -136,13 +132,11 @@ async function verificarSesion(rolRequerido = null) {
         return null;
     }
 
-    // Si la página exige un rol específico y no coincide, redirigir a su panel correcto
     if (rolRequerido && perfil.rol !== rolRequerido) {
         redirigirPorRol(perfil.rol);
         return null;
     }
 
-    // Mostrar el nombre del usuario en la barra superior si existe el elemento
     const spanNombre = document.getElementById('nombre-usuario');
     if (spanNombre) {
         spanNombre.textContent = perfil.nombre;
@@ -151,7 +145,7 @@ async function verificarSesion(rolRequerido = null) {
     return perfil;
 }
 
-// Si el usuario ya tiene sesión iniciada y entra a index.html o registro.html, redirigirlo a su panel
+// Redirigir si el usuario ya tiene sesión activa y entra a index.html o registro.html
 (async function verificarUsuarioYaLogueado() {
     const esPaginaPublica = document.getElementById('form-login') || document.getElementById('form-registro');
     if (!esPaginaPublica) return;

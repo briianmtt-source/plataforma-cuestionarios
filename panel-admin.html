@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración | EvaluaWeb</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="panel-admin.html" class="navbar-brand">EvaluaWeb | Admin</a>
+        <div class="navbar-user">
+            <span id="nombre-usuario">Cargando admin...</span>
+            <button id="btn-logout" class="btn btn-secondary btn-sm">Cerrar sesión</button>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="dashboard-header">
+            <div>
+                <h1>Panel de Administración</h1>
+                <p style="color: var(--text-muted);">Gestiona los permisos de docentes y el catálogo de materias del sistema.</p>
+            </div>
+        </div>
+
+        <div id="mensaje-alerta" class="alert"></div>
+
+        <!-- SECCIÓN 1: GESTIÓN DE USUARIOS Y ROLES -->
+        <section style="margin-bottom: 3rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                <h2 class="section-title" style="margin: 0; border: none;">Usuarios Registrados</h2>
+                <input type="text" id="buscador-usuarios" class="form-control" style="max-width: 320px;" placeholder="Buscar por nombre o correo...">
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Correo</th>
+                            <th>Rol Actual</th>
+                            <th>Acción de Rol</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-usuarios-admin">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted);">
+                                Cargando usuarios...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: GESTIÓN DE MATERIAS -->
+        <section>
+            <h2 class="section-title">Catálogo de Materias</h2>
+
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <form id="form-nueva-materia" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+                    <div class="form-group" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+                        <label for="nombre-materia">Nombre de la materia *</label>
+                        <input type="text" id="nombre-materia" class="form-control" placeholder="Ej. Física II" required>
+                    </div>
+                    <div class="form-group" style="flex: 2; min-width: 250px; margin-bottom: 0;">
+                        <label for="desc-materia">Descripción corta</label>
+                        <input type="text" id="desc-materia" class="form-control" placeholder="Ej. Mecánica clásica y termodinámica">
+                    </div>
+                    <button type="submit" id="btn-agregar-materia" class="btn btn-primary">
+                        + Agregar Materia
+                    </button>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Materia</th>
+                            <th>Descripción</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-materias-admin">
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: var(--text-muted);">
+                                Cargando materias...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
