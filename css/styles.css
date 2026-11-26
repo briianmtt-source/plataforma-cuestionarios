@@ -4,6 +4,7 @@
 :root {
     --primary: #10b981;          /* Verde esmeralda vibrante */
     --primary-hover: #059669;    /* Verde esmeralda más profundo al pasar el cursor */
+    --brand-color: #739630;      /* Color exclusivo del texto "UAVO Forms" en el header */
     --secondary: #475569;        /* Gris pizarra para botones secundarios */
     --secondary-hover: #334155;
     --success: #10b981;
@@ -59,7 +60,7 @@ body {
     gap: 0.65rem;
     font-size: 1.3rem;
     font-weight: 700;
-    color: var(--primary);
+    color: var(--brand-color);
     text-decoration: none;
     letter-spacing: -0.02em;
 }
@@ -123,6 +124,10 @@ body {
     font-size: 1.75rem;
     color: var(--primary);
     margin-bottom: 0.3rem;
+}
+
+.auth-header h1.brand-title {
+    color: var(--brand-color);
 }
 
 .auth-header p {
