@@ -54,11 +54,22 @@ body {
 }
 
 .navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--primary);
     text-decoration: none;
     letter-spacing: -0.02em;
+}
+
+.navbar-logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
 .navbar-user {
@@ -98,6 +109,14 @@ body {
 .auth-header {
     text-align: center;
     margin-bottom: 1.75rem;
+}
+
+.auth-logo {
+    width: 84px;
+    height: 84px;
+    object-fit: contain;
+    border-radius: 50%;
+    margin-bottom: 0.75rem;
 }
 
 .auth-header h1 {

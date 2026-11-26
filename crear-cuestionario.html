@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestionar Cuestionario | EvaluaWeb</title>
+    <title>Gestionar Cuestionario | UAVO Forms</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <nav class="navbar">
-        <a href="panel-profesor.html" class="navbar-brand">EvaluaWeb | Profesor</a>
+        <a href="panel-profesor.html" class="navbar-brand">
+            <img src="img/logo.png" alt="Logo UAVO" class="navbar-logo">
+            <span>UAVO Forms | Profesor</span>
+        </a>
         <div class="navbar-user">
             <span id="nombre-usuario">Cargando...</span>
             <a href="panel-profesor.html" class="btn btn-secondary btn-sm">Volver al panel</a>
@@ -63,7 +66,7 @@
         <!-- SECCIÓN 2: AGREGAR PREGUNTAS Y OPCIONES -->
         <section id="seccion-preguntas" style="display: none;">
             <div class="card" style="margin-bottom: 2rem;">
-                <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">2. Agregar Nueva Pregunta</h2>
+                <h2 id="titulo-form-pregunta" style="font-size: 1.2rem; margin-bottom: 1rem;">2. Agregar Nueva Pregunta</h2>
                 <form id="form-pregunta">
                     <div class="form-group">
                         <label for="tipo-pregunta">Tipo de pregunta</label>
@@ -102,9 +105,14 @@
                         </div>
                     </div>
 
-                    <button type="submit" id="btn-agregar-pregunta" class="btn btn-primary">
-                        + Agregar Pregunta al Cuestionario
-                    </button>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button type="submit" id="btn-agregar-pregunta" class="btn btn-primary">
+                            + Agregar Pregunta al Cuestionario
+                        </button>
+                        <button type="button" id="btn-cancelar-edicion" class="btn btn-secondary" style="display: none;">
+                            Cancelar edición
+                        </button>
+                    </div>
                 </form>
             </div>
 

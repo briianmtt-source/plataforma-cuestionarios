@@ -108,7 +108,7 @@ async function cargarCuestionariosDisponibles() {
                         ${c.descripcion || 'Sin instrucciones adicionales.'}
                     </p>
                     <div class="card-meta">
-                        ⏱ ${textoTiempo} &nbsp;|&nbsp; 🔄 Intentos: ${intentosRealizados} / ${c.intentos_permitidos}
+                        Tiempo: ${textoTiempo} &nbsp;|&nbsp; Intentos: ${intentosRealizados} / ${c.intentos_permitidos}
                     </div>
                 </div>
                 <div class="card-actions">
@@ -284,7 +284,7 @@ function iniciarTemporizador(minutos) {
     const actualizarTexto = () => {
         const min = Math.floor(segundosRestantes / 60);
         const seg = segundosRestantes % 60;
-        spanTimer.textContent = `⏱ ${String(min).padStart(2, '0')}:${String(seg).padStart(2, '0')}`;
+        spanTimer.textContent = `Tiempo restante: ${String(min).padStart(2, '0')}:${String(seg).padStart(2, '0')}`;
         if (segundosRestantes <= 60) {
             spanTimer.style.color = 'var(--danger)';
         }

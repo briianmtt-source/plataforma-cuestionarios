@@ -1,6 +1,9 @@
 // Archivo: js/profesor.js
 let perfilProfesor = null;
 let cuestionarioActualId = null;
+let preguntaEditandoId = null;
+let opcionesEditandoIds = [];
+let preguntasCargadas = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. Verificar sesión y asegurar que sea profesor
@@ -90,7 +93,7 @@ async function cargarCuestionariosProfesor() {
                         ${c.descripcion || 'Sin descripción'}
                     </p>
                     <div class="card-meta">
-                        ⏱ Tiempo: ${textoTiempo} &nbsp;|&nbsp; 🔄 Intentos: ${c.intentos_permitidos}
+                        Tiempo: ${textoTiempo} &nbsp;|&nbsp; Intentos: ${c.intentos_permitidos}
                     </div>
                 </div>
                 <div class="card-actions">
@@ -177,6 +180,10 @@ async function inicializarEditorCuestionario() {
         renderizarCamposOpciones(e.target.value);
     });
 
+    document.getElementById('btn-cancelar-edicion').addEventListener('click', () => {
+        cancelarEdicionPregunta();
+    });
+
     const params = new URLSearchParams(window.location.search);
     cuestionarioActualId = params.get('id');
 
@@ -241,8 +248,9 @@ async function inicializarEditorCuestionario() {
         if (!cuestionarioActualId) return;
 
         const btnAgregar = document.getElementById('btn-agregar-pregunta');
+        const textoOriginalBtn = preguntaEditandoId ? 'Guardar Cambios' : '+ Agregar Pregunta al Cuestionario';
         btnAgregar.disabled = true;
-        btnAgregar.textContent = 'Guardando pregunta...';
+        btnAgregar.textContent = preguntaEditandoId ? 'Actualizando pregunta...' : 'Guardando pregunta...';
 
         const tipoPregunta = document.getElementById('tipo-pregunta').value;
         const textoPregunta = document.getElementById('texto-pregunta').value.trim();
@@ -252,11 +260,90 @@ async function inicializarEditorCuestionario() {
         if (!radioSeleccionado) {
             mostrarAlerta('Debes marcar cuál de las opciones es la respuesta correcta.', 'error');
             btnAgregar.disabled = false;
-            btnAgregar.textContent = '+ Agregar Pregunta al Cuestionario';
+            btnAgregar.textContent = textoOriginalBtn;
             return;
         }
 
         const indiceCorrecto = parseInt(radioSeleccionado.value, 10);
+
+        if (preguntaEditandoId) {
+            const { error: errorUpdatePregunta } = await supabaseClient
+                .from('preguntas')
+                .update({
+                    pregunta: textoPregunta,
+                    tipo: tipoPregunta
+                })
+                .eq('id', preguntaEditandoId);
+
+            if (errorUpdatePregunta) {
+                mostrarAlerta('Error al actualizar la pregunta: ' + errorUpdatePregunta.message, 'error');
+                btnAgregar.disabled = false;
+                btnAgregar.textContent = textoOriginalBtn;
+                return;
+            }
+
+            const opcionesNuevas = Array.from(inputsOpciones).map((input, idx) => ({
+                texto: input.value.trim(),
+                es_correcta: idx === indiceCorrecto
+            }));
+
+            // Actualizar opciones existentes por ID para preservar integridad referencial
+            const cantidadCompartida = Math.min(opcionesEditandoIds.length, opcionesNuevas.length);
+            for (let i = 0; i < cantidadCompartida; i++) {
+                const { error: errUpdOpc } = await supabaseClient
+                    .from('opciones')
+                    .update(opcionesNuevas[i])
+                    .eq('id', opcionesEditandoIds[i]);
+
+                if (errUpdOpc) {
+                    mostrarAlerta('Error al actualizar las opciones: ' + errUpdOpc.message, 'error');
+                    btnAgregar.disabled = false;
+                    btnAgregar.textContent = textoOriginalBtn;
+                    return;
+                }
+            }
+
+            // Si disminuyó el número de opciones (ej. Opción múltiple -> Verdadero/Falso), eliminar sobrantes
+            if (opcionesEditandoIds.length > opcionesNuevas.length) {
+                const idsAEliminar = opcionesEditandoIds.slice(opcionesNuevas.length);
+                const { error: errDelOpc } = await supabaseClient
+                    .from('opciones')
+                    .delete()
+                    .in('id', idsAEliminar);
+
+                if (errDelOpc) {
+                    mostrarAlerta('Error al ajustar las opciones anteriores: ' + errDelOpc.message, 'error');
+                    btnAgregar.disabled = false;
+                    btnAgregar.textContent = textoOriginalBtn;
+                    return;
+                }
+            }
+
+            // Si aumentó el número de opciones (ej. Verdadero/Falso -> Opción múltiple), insertar nuevas
+            if (opcionesNuevas.length > opcionesEditandoIds.length) {
+                const opcionesExtra = opcionesNuevas.slice(opcionesEditandoIds.length).map(o => ({
+                    pregunta_id: preguntaEditandoId,
+                    texto: o.texto,
+                    es_correcta: o.es_correcta
+                }));
+                const { error: errInsOpc } = await supabaseClient
+                    .from('opciones')
+                    .insert(opcionesExtra);
+
+                if (errInsOpc) {
+                    mostrarAlerta('Error al agregar las nuevas opciones: ' + errInsOpc.message, 'error');
+                    btnAgregar.disabled = false;
+                    btnAgregar.textContent = textoOriginalBtn;
+                    return;
+                }
+            }
+
+            btnAgregar.disabled = false;
+            cancelarEdicionPregunta();
+            mostrarAlerta('Pregunta actualizada correctamente.', 'success');
+            await cargarPreguntasGuardadas(cuestionarioActualId);
+            return;
+        }
 
         const { data: preguntaCreada, error: errorPregunta } = await supabaseClient
             .from('preguntas')
@@ -341,27 +428,30 @@ async function cargarPreguntasGuardadas(cuestionarioId) {
             id,
             pregunta,
             tipo,
+            orden,
             opciones ( id, texto, es_correcta )
         `)
-        .eq('cuestionario_id', cuestionarioId);
+        .eq('cuestionario_id', cuestionarioId)
+        .order('orden', { ascending: true });
 
     if (error) {
         mostrarAlerta('Error al cargar preguntas: ' + error.message, 'error');
         return;
     }
 
-    contador.textContent = preguntas.length;
+    preguntasCargadas = preguntas || [];
+    contador.textContent = preguntasCargadas.length;
 
-    if (preguntas.length === 0) {
+    if (preguntasCargadas.length === 0) {
         contenedor.innerHTML = `<div class="card"><p style="color: var(--text-muted);">Aún no hay preguntas en este cuestionario.</p></div>`;
         return;
     }
 
-    contenedor.innerHTML = preguntas.map((p, index) => {
+    contenedor.innerHTML = preguntasCargadas.map((p, index) => {
         const etiquetaTipo = p.tipo === 'verdadero_falso' ? 'Verdadero / Falso' : 'Opción múltiple';
         const opcionesHtml = p.opciones.map(o => `
             <li style="margin-bottom: 0.3rem; color: ${o.es_correcta ? 'var(--success)' : 'var(--text-main)'}; font-weight: ${o.es_correcta ? '700' : '400'};">
-                ${o.es_correcta ? '✔ ' : '• '} ${o.texto}
+                • ${o.texto}${o.es_correcta ? ' (Correcta)' : ''}
             </li>
         `).join('');
 
@@ -375,11 +465,61 @@ async function cargarPreguntasGuardadas(cuestionarioId) {
                             ${opcionesHtml}
                         </ul>
                     </div>
-                    <button onclick="eliminarPregunta('${p.id}')" class="btn btn-danger btn-sm">Eliminar</button>
+                    <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+                        <button onclick="editarPregunta('${p.id}')" class="btn btn-secondary btn-sm">Editar</button>
+                        <button onclick="eliminarPregunta('${p.id}')" class="btn btn-danger btn-sm">Eliminar</button>
+                    </div>
                 </div>
             </div>
         `;
     }).join('');
+}
+
+function editarPregunta(preguntaId) {
+    const pregunta = preguntasCargadas.find(p => p.id === preguntaId);
+    if (!pregunta) return;
+
+    preguntaEditandoId = pregunta.id;
+    opcionesEditandoIds = (pregunta.opciones || []).map(o => o.id);
+
+    const tipo = pregunta.tipo || 'opcion_multiple';
+    document.getElementById('tipo-pregunta').value = tipo;
+    renderizarCamposOpciones(tipo);
+
+    document.getElementById('texto-pregunta').value = pregunta.pregunta;
+
+    const inputsOpciones = document.querySelectorAll('.opcion-texto');
+    const radios = document.querySelectorAll('input[name="correcta"]');
+
+    (pregunta.opciones || []).forEach((opcion, idx) => {
+        if (inputsOpciones[idx]) {
+            inputsOpciones[idx].value = opcion.texto;
+        }
+        if (opcion.es_correcta && radios[idx]) {
+            radios[idx].checked = true;
+        }
+    });
+
+    document.getElementById('titulo-form-pregunta').textContent = '2. Editar Pregunta';
+    document.getElementById('btn-agregar-pregunta').textContent = 'Guardar Cambios';
+    document.getElementById('btn-cancelar-edicion').style.display = 'inline-flex';
+
+    document.getElementById('seccion-preguntas').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('texto-pregunta').focus();
+}
+
+function cancelarEdicionPregunta() {
+    preguntaEditandoId = null;
+    opcionesEditandoIds = [];
+
+    document.getElementById('titulo-form-pregunta').textContent = '2. Agregar Nueva Pregunta';
+    document.getElementById('btn-agregar-pregunta').textContent = '+ Agregar Pregunta al Cuestionario';
+    document.getElementById('btn-cancelar-edicion').style.display = 'none';
+
+    const selectTipo = document.getElementById('tipo-pregunta');
+    selectTipo.value = 'opcion_multiple';
+    document.getElementById('texto-pregunta').value = '';
+    renderizarCamposOpciones('opcion_multiple');
 }
 
 async function eliminarPregunta(preguntaId) {
@@ -391,6 +531,10 @@ async function eliminarPregunta(preguntaId) {
     if (error) {
         mostrarAlerta('Error al borrar la pregunta: ' + error.message, 'error');
         return;
+    }
+
+    if (preguntaEditandoId === preguntaId) {
+        cancelarEdicionPregunta();
     }
 
     mostrarAlerta('Pregunta eliminada.', 'success');
@@ -458,12 +602,11 @@ async function cargarEstadisticasCuestionario() {
     const total = intentos.length;
     const sumaNotas = intentos.reduce((acc, item) => acc + Number(item.calificacion || 0), 0);
     const promedio = (sumaNotas / total).toFixed(1);
-    const aprobados = intentos.filter(item => Number(item.calificacion || 0) >= 60).length;
-    const tasaAprobacion = Math.round((aprobados / total) * 100);
+    const maxima = Math.max(...intentos.map(item => Number(item.calificacion || 0)));
 
     document.getElementById('stat-total').textContent = total;
     document.getElementById('stat-promedio').textContent = `${promedio} / 100`;
-    document.getElementById('stat-aprobacion').textContent = `${tasaAprobacion}%`;
+    document.getElementById('stat-maxima').textContent = `${maxima} / 100`;
 
     tbody.innerHTML = intentos.map(item => {
         const nombreAlumno = item.perfiles ? item.perfiles.nombre : 'Alumno';
